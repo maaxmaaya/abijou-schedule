@@ -768,10 +768,11 @@ function getRetireKey(e){
 }
 // 이번 달 이전에 퇴사한 직원인지 (다음달부터 숨김)
 function isRetiredBeforeMonth(e,y,m){
+  // y: 연도, m: 1-indexed 월 (1=1월, 10=10월)
+  // 퇴사월보다 이후 달이면 숨김 (예: 9월 퇴사 → m>=10이면 숨김)
   const retireKey=e.retireDate||getRetireKey(e);
   if(!retireKey)return false;
-  // retireKey의 연월이 (y,m) 보다 이전이면 숨김
-  const [ry,rm]=retireKey.split('-').map(Number);
+  const [ry,rm]=retireKey.split('-').map(Number); // rm: 1-indexed
   if(ry<y)return true;
   if(ry===y&&rm<m)return true;
   return false;
@@ -872,7 +873,7 @@ function render(){
   /* tbody */
   // 현재 뷰의 첫 번째 날짜 기준으로 퇴사자 필터
   const viewStartDate=dates[0];
-  const visibleEmps=emps.filter(e=>!isRetiredBeforeMonth(e,viewStartDate.y,viewStartDate.m));
+  const visibleEmps=emps.filter(e=>!isRetiredBeforeMonth(e,viewStartDate.y,viewStartDate.m+1)); // m+1: 0-indexed→1-indexed
   document.getElementById('tb').innerHTML=visibleEmps.map((e,i)=>{
     let isNew=false;
     // dates 목록에서 실제 표시되는 월 목록으로 신규 여부 확인
