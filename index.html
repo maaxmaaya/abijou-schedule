@@ -816,8 +816,8 @@ function attendCounts(key){
   const c={};
   DEPTS.forEach(dep=>{
     const [ky,km]=key.split('-').map(Number);
-    const total=emps.filter(e=>dep.depts.includes(e.dept)&&isActive(e,key)&&!isRetiredBeforeMonth(e,ky,km-1)).length;
-    const absentSum=emps.filter(e=>dep.depts.includes(e.dept)&&isActive(e,key)&&!isRetiredBeforeMonth(e,ky,km-1))
+    const total=emps.filter(e=>dep.depts.includes(e.dept)&&isActive(e,key)&&!isRetiredBeforeMonth(e,ky,km)).length;
+    const absentSum=emps.filter(e=>dep.depts.includes(e.dept)&&isActive(e,key)&&!isRetiredBeforeMonth(e,ky,km))
       .reduce((s,e)=>s+absentScore(e,key),0);
     c[dep.key]=Math.max(0,total-absentSum);
   });
@@ -938,8 +938,8 @@ function render(){
   const wCells=dates.map(({key,first})=>{
     const sp=first?';border-left:2.5px solid var(--acc)':'';
     const [tky,tkm]=key.split('-').map(Number);
-    const active=emps.filter(e=>isActive(e,key)&&!isRetiredBeforeMonth(e,tky,tkm-1)).length;
-    const absentSum=emps.filter(e=>isActive(e,key)&&!isRetiredBeforeMonth(e,tky,tkm-1)).reduce((s,e)=>s+absentScore(e,key),0);
+    const active=emps.filter(e=>isActive(e,key)&&!isRetiredBeforeMonth(e,tky,tkm)).length;
+    const absentSum=emps.filter(e=>isActive(e,key)&&!isRetiredBeforeMonth(e,tky,tkm)).reduce((s,e)=>s+absentScore(e,key),0);
     const n=Math.max(0,active-absentSum);
     const nStr=Number.isInteger(n)?String(n):(n%1===0.5?String(n):'');
     return `<td style="color:${n>0?'var(--acc)':'var(--txm)'}${sp}">${n>0?nStr:''}</td>`;
