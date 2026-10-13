@@ -13,6 +13,7 @@
   --sh:0 2px 12px rgba(60,80,180,.08);--shlg:0 8px 32px rgba(60,80,180,.14);
   --off:#dbeafe;--offt:#1d4ed8;--ann:#dcfce7;--annt:#166534;
   --ham:#fef9c3;--hamt:#854d0e;--hpm:#ffedd5;--hpmt:#9a3412;
+  --ely:#ccfbf1;--elyt:#0f766e;    /* 조퇴: 청록 */
   --con:#fee2e2;--cont:#b91c1c;    /* 대휴: 빨강 */
   --cam:#fce7f3;--camt:#9d174d;    /* 오전대휴: 핑크 */
   --cpm:#ede9fe;--cpmt:#5b21b6;    /* 오후대휴: 보라 */
@@ -73,6 +74,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
 .chip{display:inline-block;padding:2px 5px;border-radius:4px;font-size:10px;font-weight:700;
       line-height:1.5;font-family:'DM Mono',monospace}
 .co{background:var(--off);color:var(--offt)} .ca{background:var(--ann);color:var(--annt)}
+.cel{background:var(--ely);color:var(--elyt)}  /* 조퇴: 청록 */
 .cha{background:var(--ham);color:var(--hamt)} .chp{background:var(--hpm);color:var(--hpmt)}
 .cc{background:var(--con);color:var(--cont)}   /* 대휴: 빨강 */
 .cam{background:var(--cam);color:var(--camt)}  /* 오전대휴: 핑크 */
@@ -344,7 +346,7 @@ function updateStickyTops(){
   <div class="lb">
     <h1>Abijou구로점 근무일정표</h1>
     <p class="sub">Abijou Guro · Schedule Manager</p>
-    <p style="font-size:11px;color:var(--txm);margin-top:6px;font-family:'DM Mono',monospace">v2.1 · 2026-09-07</p>
+    <p style="font-size:11px;color:var(--txm);margin-top:6px;font-family:'DM Mono',monospace">v2.2 · 2026-10-13</p>
     <label>비밀번호</label>
     <input type="password" id="pw" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')login()">
     <button class="lbtn" onclick="login()">로그인</button>
@@ -371,6 +373,7 @@ function updateStickyTops(){
   <div class="li"><span class="chip ca">연차</span>연차</div>
   <div class="li"><span class="chip cha">오전</span>오전반차</div>
   <div class="li"><span class="chip chp">오후</span>오후반차</div>
+  <div class="li"><span class="chip cel">조퇴</span>조퇴</div>
   <div class="li"><span class="chip cc">대휴</span>대휴</div>
   <div class="li"><span class="chip cam">오전대휴</span>오전대휴</div>
   <div class="li"><span class="chip cpm">오후대휴</span>오후대휴</div>
@@ -567,6 +570,7 @@ const SM={
   annual:{l:'연차',    c:'ca', s:'연차', bg:'background:var(--ann);color:var(--annt)'},
   ham:   {l:'오전반차',c:'cha',s:'오전', bg:'background:var(--ham);color:var(--hamt)'},
   hpm:   {l:'오후반차',c:'chp',s:'오후', bg:'background:var(--hpm);color:var(--hpmt)'},
+  el:    {l:'조퇴',    c:'cel', s:'조퇴',  bg:'background:var(--ely);color:var(--elyt)', half:true},
   compen:{l:'대휴',    c:'cc',  s:'대휴',   bg:'background:var(--con);color:var(--cont)',  half:false},
   cam:   {l:'오전대휴',c:'cam', s:'오전대',  bg:'background:var(--cam);color:var(--camt)', half:true},
   cpm:   {l:'오후대휴',c:'cpm', s:'오후대',  bg:'background:var(--cpm);color:var(--cpmt)', half:true},
