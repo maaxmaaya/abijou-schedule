@@ -12,8 +12,8 @@
   --tx:#1a1f3a;--txd:#5a6385;--txm:#9ba3c0;
   --sh:0 2px 12px rgba(60,80,180,.08);--shlg:0 8px 32px rgba(60,80,180,.14);
   --off:#dbeafe;--offt:#1d4ed8;--ann:#dcfce7;--annt:#166534;
-  --ham:#fef9c3;--hamt:#854d0e;--hpm:#ffedd5;--hpmt:#9a3412;
-  --ely:#ccfbf1;--elyt:#0f766e;    /* 조퇴: 청록 */
+  --ham:#ffedd5;--hamt:#9a3412;--hpm:#ffedd5;--hpmt:#9a3412;
+  --ely:#fef9c3;--elyt:#854d0e;    /* 조퇴: 노랑(구 오전반차) */
   --con:#fee2e2;--cont:#b91c1c;    /* 대휴: 빨강 */
   --cam:#fce7f3;--camt:#9d174d;    /* 오전대휴: 핑크 */
   --cpm:#ede9fe;--cpmt:#5b21b6;    /* 오후대휴: 보라 */
@@ -568,9 +568,9 @@ const DEPTS=[
 const SM={
   off:   {l:'오프(V)', c:'co', s:'오프', bg:'background:var(--off);color:var(--offt)'},
   annual:{l:'연차',    c:'ca', s:'연차', bg:'background:var(--ann);color:var(--annt)'},
-  ham:   {l:'오전반차',c:'cha',s:'오전', bg:'background:var(--ham);color:var(--hamt)'},
+  ham:   {l:'오전반차',c:'cha',s:'오전', bg:'background:var(--ham);color:var(--hamt)'},  /* 오후반차와 동일 색상 */
   hpm:   {l:'오후반차',c:'chp',s:'오후', bg:'background:var(--hpm);color:var(--hpmt)'},
-  el:    {l:'조퇴',    c:'cel', s:'조퇴',  bg:'background:var(--ely);color:var(--elyt)', half:true},
+  el:    {l:'조퇴',    c:'cel', s:'조퇴',  bg:'background:var(--ely);color:var(--elyt)', half:true},  /* 구 오전반차 색상 */
   compen:{l:'대휴',    c:'cc',  s:'대휴',   bg:'background:var(--con);color:var(--cont)',  half:false},
   cam:   {l:'오전대휴',c:'cam', s:'오전대',  bg:'background:var(--cam);color:var(--camt)', half:true},
   cpm:   {l:'오후대휴',c:'cpm', s:'오후대',  bg:'background:var(--cpm);color:var(--cpmt)', half:true},
