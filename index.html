@@ -381,7 +381,7 @@ td.c5.admin-wpw:hover{background:var(--accl)!important;color:var(--acc)!importan
   <div class="lb">
     <h1>Abijou구로점 근무일정표</h1>
     <p class="sub">Abijou Guro · Schedule Manager</p>
-    <p style="font-size:11px;color:var(--txm);margin-top:6px;font-family:'DM Mono',monospace">v2.8 · 2026-10-16</p>
+    <p style="font-size:11px;color:var(--txm);margin-top:6px;font-family:'DM Mono',monospace">v2.9 · 2026-10-16</p>
     <label>비밀번호</label>
     <input type="password" id="pw" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')login()">
     <button class="lbtn" onclick="login()">로그인</button>
@@ -547,10 +547,12 @@ td.c5.admin-wpw:hover{background:var(--accl)!important;color:var(--acc)!importan
       <label>주당 근무일 <span style="color:var(--acc);font-size:10px">· 출근 확인 기준</span></label>
       <select id="ef-wpw">
         <option value="5">주5일 (기본)</option>
+        <option value="6">주6일</option>
         <option value="4">주4일</option>
         <option value="3">주3일</option>
         <option value="2">주2일</option>
         <option value="1">주1일</option>
+        <option value="0">N/A (검사 제외)</option>
       </select>
     </div>
     <div class="jsec" id="jsec" style="display:none">
@@ -1092,7 +1094,8 @@ function render(){
 
     // ── 주간 불일치 계산 (wpw 기준, 월~토 6일 단위) ──
     // 출근으로 인정하지 않는 상태: "오프"만 제외 (나머지 모두 출근 카운트)
-    const wpw=e.wpw||5;
+    // wpw===0 → N/A: 불일치 강조 비활성화
+    const wpw=e.wpw==null?5:e.wpw;
     // 날짜→week key 매핑 (월요일 시작)
     const dateWeekMap={};
     dates.forEach(({y,m,d,key})=>{
@@ -1115,7 +1118,7 @@ function render(){
     });
     // 주간별 실제 출근일 vs wpw 비교 (오프만 결근 처리)
     const mismatchWeeks=new Set();
-    if(!isParental(e)){
+    if(!isParental(e) && wpw!==0){ // wpw===0(N/A)이면 검사 전체 스킵
       Object.entries(empWeekMap).forEach(([wk,days])=>{
         if(days.length<4) return; // 화면 가장자리 부분 주 제외 (월~토 4일 미만)
         const actualWork=days.filter(k=>{
@@ -1172,8 +1175,8 @@ function render(){
 
     const ac=isAdmin?`<td class="c7"><div class="act-wrap"><button class="ibtn ibtn-e" onclick="openEditEmp('${e.id}')" title="수정">✎</button><button class="ibtn ibtn-d" onclick="openDelModal('${e.id}')" title="삭제">✕</button></div></td>`:'';
 
-    // 주당 근무일: 직원 데이터에 저장된 wpw 사용
-    const workDayLabel=isParental(e)?'–':`주${wpw}일`;
+    // 주당 근무일: 직원 데이터에 저장된 wpw 사용 (0 = N/A)
+    const workDayLabel=isParental(e)?'–':wpw===0?'N/A':`주${wpw}일`;
     const wpwTd=isAdmin&&!isParental(e)
       ? `<td class="c5 admin-wpw" onclick="openWpwPop(event,'${e.id}',${wpw})" title="클릭하여 변경">${workDayLabel}</td>`
       : `<td class="c5">${workDayLabel}</td>`;
@@ -1320,11 +1323,12 @@ function openWpwPop(evt, eid, curWpw){
   evt.stopPropagation();
   wpwPopEid=eid;
   const pop=document.getElementById('wpw-pop');
-  // 버튼 목록 생성 (주1일~주6일)
+  // 버튼 목록 생성 (주1일~주6일 + N/A)
   let btns='';
   for(let n=1;n<=6;n++){
     btns+=`<button onclick="applyWpw(${n})"${n===curWpw?' class="cur"':''}>주${n}일${n===5?' (기본)':''}</button>`;
   }
+  btns+=`<button onclick="applyWpw(0)" style="color:var(--txm)"${curWpw===0?' class="cur"':''}>N/A (검사 제외)</button>`;
   pop.innerHTML=`<div class="wpw-title">주당 근무일</div>${btns}`;
   // 위치 계산
   const rect=evt.currentTarget.getBoundingClientRect();
@@ -1450,7 +1454,7 @@ function openEditEmp(eid){
   document.getElementById('ef-dept').value=e.dept;
   document.getElementById('ef-rank').value=e.rank;
   document.getElementById('ef-note').value=e.note||'';
-  document.getElementById('ef-wpw').value=String(e.wpw||5);
+  document.getElementById('ef-wpw').value=String(e.wpw==null?5:e.wpw);
   document.getElementById('ef-id').disabled=true;
   document.getElementById('em-err').textContent='';
   document.getElementById('jsec').style.display='block';
@@ -1470,7 +1474,8 @@ function saveEmp(){
   const dept=document.getElementById('ef-dept').value;
   const rank=document.getElementById('ef-rank').value;
   const note=document.getElementById('ef-note').value.trim();
-  const wpw=parseInt(document.getElementById('ef-wpw').value)||5;
+  const wpwRaw=parseInt(document.getElementById('ef-wpw').value);
+  const wpw=isNaN(wpwRaw)?5:wpwRaw;
   const err=document.getElementById('em-err');
   if(!name){err.textContent='이름을 입력해주세요.';return;}
   if(!dept){err.textContent='부서를 선택해주세요.';return;}
