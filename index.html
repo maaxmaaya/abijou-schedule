@@ -244,6 +244,21 @@ function updateStickyTops(){
   document.querySelector('.tw').style.paddingTop = '16px';
 }
 
+/* ── WPW QUICK-PICK POPUP ── */
+#wpw-pop{position:fixed;z-index:600;background:var(--sur);border:1px solid var(--bdr2);
+  border-radius:12px;padding:10px 8px;box-shadow:var(--shlg);min-width:130px;
+  opacity:0;transform:translateY(4px);transition:opacity .12s,transform .12s;
+  pointer-events:none}
+#wpw-pop.show{opacity:1;transform:translateY(0);pointer-events:auto}
+#wpw-pop .wpw-title{font-size:11px;color:var(--txm);padding:0 6px 6px;font-weight:600;border-bottom:1px solid var(--bdr);margin-bottom:6px}
+#wpw-pop button{display:block;width:100%;padding:6px 10px;border:none;border-radius:8px;
+  background:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--tx);
+  text-align:left;font-family:'Noto Sans KR',sans-serif}
+#wpw-pop button:hover{background:var(--accl);color:var(--acc)}
+#wpw-pop button.cur{background:var(--accl);color:var(--acc)}
+td.c5.admin-wpw{cursor:pointer}
+td.c5.admin-wpw:hover{background:var(--accl)!important;color:var(--acc)!important}
+
 /* ── HOVER POPUP ── */
 #pop{position:fixed;z-index:500;background:var(--sur);border:1px solid var(--bdr2);
      border-radius:14px;padding:13px 15px;box-shadow:var(--shlg);
@@ -366,7 +381,7 @@ function updateStickyTops(){
   <div class="lb">
     <h1>Abijou구로점 근무일정표</h1>
     <p class="sub">Abijou Guro · Schedule Manager</p>
-    <p style="font-size:11px;color:var(--txm);margin-top:6px;font-family:'DM Mono',monospace">v2.7 · 2026-10-16</p>
+    <p style="font-size:11px;color:var(--txm);margin-top:6px;font-family:'DM Mono',monospace">v2.8 · 2026-10-16</p>
     <label>비밀번호</label>
     <input type="password" id="pw" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')login()">
     <button class="lbtn" onclick="login()">로그인</button>
@@ -459,6 +474,11 @@ function updateStickyTops(){
 
 <!-- HOVER POPUP -->
 <div id="pop"></div>
+
+<!-- WPW QUICK-PICK POPUP -->
+<div id="wpw-pop">
+  <div class="wpw-title">주당 근무일</div>
+</div>
 
 <!-- ⑥ 날짜 일괄 적용 모달 -->
 <div class="ov" id="bulk-ov" onclick="if(event.target===this)closeBulk()">
@@ -1154,6 +1174,9 @@ function render(){
 
     // 주당 근무일: 직원 데이터에 저장된 wpw 사용
     const workDayLabel=isParental(e)?'–':`주${wpw}일`;
+    const wpwTd=isAdmin&&!isParental(e)
+      ? `<td class="c5 admin-wpw" onclick="openWpwPop(event,'${e.id}',${wpw})" title="클릭하여 변경">${workDayLabel}</td>`
+      : `<td class="c5">${workDayLabel}</td>`;
 
     return `<tr${isNew?' class="new-row"':''}>
       <td class="c0" style="color:var(--txm);font-size:11px">${i+1}</td>
@@ -1161,7 +1184,7 @@ function render(){
       <td class="c2">${e.joinDate||''}</td>
       <td class="c3">${e.dept}</td>
       <td class="c4">${e.rank}</td>
-      <td class="c5">${workDayLabel}</td>
+      ${wpwTd}
       <td class="c6" style="overflow:hidden;text-overflow:ellipsis${isParental(e)?';color:var(--subt);font-weight:600':''}">${e.note||''}</td>
       ${ac}${cells}</tr>`;
   }).join('');
@@ -1289,6 +1312,45 @@ function setSt(k){
   saveData();closeStatus();render();
 }
 function closeStatus(){document.getElementById('ov').classList.remove('op');mE=mD=null;document.body.focus();}
+
+/* ── WPW 빠른 선택 팝업 ── */
+let wpwPopEid=null;
+function openWpwPop(evt, eid, curWpw){
+  if(role!=='admin') return;
+  evt.stopPropagation();
+  wpwPopEid=eid;
+  const pop=document.getElementById('wpw-pop');
+  // 버튼 목록 생성 (주1일~주6일)
+  let btns='';
+  for(let n=1;n<=6;n++){
+    btns+=`<button onclick="applyWpw(${n})"${n===curWpw?' class="cur"':''}>주${n}일${n===5?' (기본)':''}</button>`;
+  }
+  pop.innerHTML=`<div class="wpw-title">주당 근무일</div>${btns}`;
+  // 위치 계산
+  const rect=evt.currentTarget.getBoundingClientRect();
+  const top=rect.bottom+4;
+  const left=Math.min(rect.left, window.innerWidth-150);
+  pop.style.top=top+'px';
+  pop.style.left=left+'px';
+  pop.classList.add('show');
+}
+function applyWpw(n){
+  if(!wpwPopEid) return;
+  const idx=emps.findIndex(x=>x.id===wpwPopEid);
+  if(idx>-1){ emps[idx].wpw=n; }
+  saveData(); closeWpwPop(); render();
+}
+function closeWpwPop(){
+  document.getElementById('wpw-pop').classList.remove('show');
+  wpwPopEid=null;
+}
+// 팝업 외부 클릭 시 닫기
+document.addEventListener('click',function(e){
+  const pop=document.getElementById('wpw-pop');
+  if(pop&&pop.classList.contains('show')&&!pop.contains(e.target)){
+    closeWpwPop();
+  }
+});
 
 /* ── 일괄 적용 모달 ── */
 let bulkDate=null, bulkSt=null;
