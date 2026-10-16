@@ -294,11 +294,6 @@ td.c5.admin-wpw:hover{background:var(--accl)!important;color:var(--acc)!importan
   font-family:'Noto Sans KR',sans-serif;margin-bottom:8px;transition:filter .15s}
 .bulk-apply-btn:hover{filter:brightness(.9)}
 .bulk-apply-btn:disabled{opacity:.45;cursor:default}
-/* 오프 경고 */
-.off-warn{display:inline-block;margin-left:5px;background:#facc15;color:#78350f;
-  font-size:9.5px;font-weight:800;padding:1px 5px;border-radius:6px;
-  vertical-align:middle;line-height:1.5;animation:pulse-warn .9s ease-in-out infinite alternate}
-@keyframes pulse-warn{from{opacity:.7}to{opacity:1}}
 /* thead 날짜 셀 클릭 커서 (관리자) */
 .dc.admin-clickable{cursor:pointer}
 .dc.admin-clickable:hover{background:var(--accl)!important}
@@ -381,7 +376,7 @@ td.c5.admin-wpw:hover{background:var(--accl)!important;color:var(--acc)!importan
   <div class="lb">
     <h1>Abijou구로점 근무일정표</h1>
     <p class="sub">Abijou Guro · Schedule Manager</p>
-    <p style="font-size:11px;color:var(--txm);margin-top:6px;font-family:'DM Mono',monospace">v2.9 · 2026-10-16</p>
+    <p style="font-size:11px;color:var(--txm);margin-top:6px;font-family:'DM Mono',monospace">v2.11 · 2026-10-16</p>
     <label>비밀번호</label>
     <input type="password" id="pw" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')login()">
     <button class="lbtn" onclick="login()">로그인</button>
@@ -1074,8 +1069,6 @@ function render(){
   // 현재 뷰의 첫 번째 날짜 기준으로 퇴사자 필터
   const viewStartDate=dates[0];
   const visibleEmps=emps.filter(e=>!isRetiredBeforeMonth(e,viewStartDate.y,viewStartDate.m+1)); // m+1: 0-indexed→1-indexed
-  // 오프 경고 계산
-  const offWarnings = calcOffWarnings(dates, visibleEmps);
   document.getElementById('tb').innerHTML=visibleEmps.map((e,i)=>{
     let isNew=false;
     // dates 목록에서 실제 표시되는 월 목록으로 신규 여부 확인
@@ -1084,13 +1077,9 @@ function render(){
       const [vy,vm]=ym.split('-').map(Number);
       if(isNewMonth(e,vy,vm))isNew=true;
     });
-    const warnInfo = offWarnings[e.id];
-    const warnBadge = (warnInfo && warnInfo.warn)
-      ? `<span class="off-warn" title="주별 오프 수가 1개가 아닌 주가 있습니다">⚠ 오프</span>`
-      : '';
     const nameTd=isNew
-      ? `${e.name} <span class="chip cn" style="font-size:9px">신규</span>${warnBadge}`
-      : `${e.name}${warnBadge}`;
+      ? `${e.name} <span class="chip cn" style="font-size:9px">신규</span>`
+      : `${e.name}`;
 
     // ── 주간 불일치 계산 (wpw 기준, 월~토 6일 단위) ──
     // 출근으로 인정하지 않는 상태: "오프"만 제외 (나머지 모두 출근 카운트)
@@ -1366,9 +1355,13 @@ function openBulk(dateKey){
   const dow=new Date(y,m-1,d).getDay();
   document.getElementById('bulk-date-label').textContent=`${m}월 ${d}일 (${DW[dow]}) 일괄 적용`;
   // 선택 가능 항목: 휴일, 오프, 상태 지우기 세 가지만
-  document.getElementById('bulk-sg').innerHTML=
-    `<button class="sb" style="background:var(--off);color:var(--offt)" onclick="selectBulkSt('off',this)">오프(V)</button>`+
-    `<button class="sb" style="background:#f1f5f9;color:#475569;border:1.5px solid #cbd5e1" onclick="selectBulkSt('__clear__',this)">상태 지우기</button>`;
+  const _sg=document.getElementById('bulk-sg');
+  _sg.innerHTML=
+    `<button class="sb" data-bst="off" style="background:var(--off);color:var(--offt)">오프(V)</button>`+
+    `<button class="sb" data-bst="__clear__" style="background:#f1f5f9;color:#475569;border:1.5px solid #cbd5e1">상태 지우기</button>`;
+  _sg.querySelectorAll('.sb').forEach(function(btn){
+    btn.addEventListener('click',function(){selectBulkSt(btn.dataset.bst,btn);});
+  });
   // 이 날짜에 적용될 대상 인원 수 계산
   const dates=buildDates();
   const viewStartDate=dates[0];
