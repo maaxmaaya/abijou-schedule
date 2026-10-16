@@ -93,14 +93,15 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
 .tw{overflow-x:clip;padding:16px 24px 48px}
 table{border-collapse:separate;border-spacing:0;font-size:12px;white-space:nowrap;min-width:100%}
 
-/* Fixed left columns: c0~c6
+/* Fixed left columns: c0~c7
    c0(No)  left:0,   w:36
    c1(이름)  left:36,  w:82
    c2(입사일) left:118, w:76
    c3(부서)  left:194, w:64
    c4(직급)  left:258, w:60
-   c5(비고)  left:318, w:84
-   c6(관리)  left:402, w:60  → viewer에선 없음
+   c5(근무일) left:318, w:52
+   c6(비고)  left:370, w:72
+   c7(관리)  left:442, w:58  → viewer에선 없음
 */
 .fx{position:sticky!important;z-index:20!important;background:var(--sur)!important}
 .c0{left:0;min-width:36px;max-width:36px}
@@ -108,25 +109,27 @@ table{border-collapse:separate;border-spacing:0;font-size:12px;white-space:nowra
 .c2{left:118px;min-width:76px;max-width:76px}
 .c3{left:194px;min-width:64px}
 .c4{left:258px;min-width:60px}
-.c5{left:318px;min-width:84px;max-width:84px}
-.c6{left:402px;min-width:58px;max-width:58px}
+.c5{left:318px;min-width:52px;max-width:52px}
+.c6{left:370px;min-width:72px;max-width:72px}
+.c7{left:442px;min-width:58px;max-width:58px}
 
 td{padding:6px 3px;text-align:center;border-bottom:1px solid var(--bdr);color:var(--txd)}
-td.c0,td.c1,td.c2,td.c3,td.c4,td.c5,td.c6{
+td.c0,td.c1,td.c2,td.c3,td.c4,td.c5,td.c6,td.c7{
   position:sticky;background:var(--sur);border-right:1.5px solid var(--bdr);z-index:5}
 td.c0{left:0}
 td.c1{left:36px;color:var(--tx);font-weight:600;font-size:13px}
 td.c2{left:118px;font-size:10.5px;color:var(--txd);font-family:'DM Mono',monospace}
 td.c3{left:194px;font-size:11px}
 td.c4{left:258px;font-size:11px}
-td.c5{left:318px;font-size:10px;color:var(--txm)}
-td.c6{left:402px}
+td.c5{left:318px;font-size:11px;font-weight:700;color:var(--acc)}
+td.c6{left:370px;font-size:10px;color:var(--txm)}
+td.c7{left:442px}
 
 tbody tr:hover td{background:var(--sur2)!important}
 tbody tr.new-row td{background:#f0fdf4!important}
 tbody tr.new-row td.c0,tbody tr.new-row td.c1,tbody tr.new-row td.c2,
 tbody tr.new-row td.c3,tbody tr.new-row td.c4,tbody tr.new-row td.c5,
-tbody tr.new-row td.c6{background:#f0fdf4!important}
+tbody tr.new-row td.c6,tbody tr.new-row td.c7{background:#f0fdf4!important}
 tbody tr.new-row:hover td{background:#dcfce7!important}
 
 /* thead sticky top은 JS가 동적으로 계산해 적용 (updateStickyTops) */
@@ -154,7 +157,7 @@ th.sun{color:#dc2626!important} th.sat{color:#1d4ed8!important}
 tfoot tr td{background:var(--sur2)!important;border-top:2px solid var(--bdr2);
             font-size:11px;font-weight:700}
 tfoot tr td.c0,tfoot tr td.c1,tfoot tr td.c2,tfoot tr td.c3,
-tfoot tr td.c4,tfoot tr td.c5,tfoot tr td.c6{
+tfoot tr td.c4,tfoot tr td.c5,tfoot tr td.c6,tfoot tr td.c7{
   position:sticky;background:var(--sur2)!important;z-index:5}
 
 /* action buttons */
@@ -267,6 +270,23 @@ function updateStickyTops(){
        padding:26px;box-shadow:var(--shlg)}
 .modal h3{font-size:15px;font-weight:700;margin-bottom:4px;color:var(--tx)}
 .msub{font-size:12px;color:var(--txd);margin-bottom:18px}
+/* 일괄 적용 모달 */
+.bulk-w{width:360px}
+.bulk-date{font-size:16px;font-weight:700;color:var(--acc);margin-bottom:4px}
+.bulk-sg{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px}
+.bulk-apply-btn{width:100%;padding:11px;background:linear-gradient(135deg,var(--acc),var(--acc2));
+  color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;
+  font-family:'Noto Sans KR',sans-serif;margin-bottom:8px;transition:filter .15s}
+.bulk-apply-btn:hover{filter:brightness(.9)}
+.bulk-apply-btn:disabled{opacity:.45;cursor:default}
+/* 오프 경고 */
+.off-warn{display:inline-block;margin-left:5px;background:#facc15;color:#78350f;
+  font-size:9.5px;font-weight:800;padding:1px 5px;border-radius:6px;
+  vertical-align:middle;line-height:1.5;animation:pulse-warn .9s ease-in-out infinite alternate}
+@keyframes pulse-warn{from{opacity:.7}to{opacity:1}}
+/* thead 날짜 셀 클릭 커서 (관리자) */
+.dc.admin-clickable{cursor:pointer}
+.dc.admin-clickable:hover{background:var(--accl)!important}
 /* status modal */
 .sm-w{width:340px}
 .sg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
@@ -346,7 +366,7 @@ function updateStickyTops(){
   <div class="lb">
     <h1>Abijou구로점 근무일정표</h1>
     <p class="sub">Abijou Guro · Schedule Manager</p>
-    <p style="font-size:11px;color:var(--txm);margin-top:6px;font-family:'DM Mono',monospace">v2.3 · 2026-10-16</p>
+    <p style="font-size:11px;color:var(--txm);margin-top:6px;font-family:'DM Mono',monospace">v2.6 · 2026-10-16</p>
     <label>비밀번호</label>
     <input type="password" id="pw" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')login()">
     <button class="lbtn" onclick="login()">로그인</button>
@@ -440,6 +460,17 @@ function updateStickyTops(){
 <!-- HOVER POPUP -->
 <div id="pop"></div>
 
+<!-- ⑥ 날짜 일괄 적용 모달 -->
+<div class="ov" id="bulk-ov" onclick="if(event.target===this)closeBulk()">
+  <div class="modal bulk-w">
+    <div class="bulk-date" id="bulk-date-label"></div>
+    <p class="msub" id="bulk-sub">전체 직원에게 일괄 적용됩니다<br><span style="font-size:11px;color:#dc2626">※ 이미 입력된 상태는 덮어씁니다</span></p>
+    <div class="bulk-sg" id="bulk-sg"></div>
+    <button class="bulk-apply-btn" id="bulk-apply-btn" disabled onclick="applyBulk()">선택한 상태 일괄 적용</button>
+    <button class="btn-c" onclick="closeBulk()">취소</button>
+  </div>
+</div>
+
 <!-- ① 근무상태 모달 -->
 <div class="ov" id="ov" onclick="if(event.target===this)closeStatus()">
   <div class="modal sm-w">
@@ -489,8 +520,18 @@ function updateStickyTops(){
       </div>
       <div class="frow">
         <label>비고</label>
-        <input type="text" id="ef-note" placeholder="예: 주4일">
+        <input type="text" id="ef-note" placeholder="예: 파트타임">
       </div>
+    </div>
+    <div class="frow">
+      <label>주당 근무일 <span style="color:var(--acc);font-size:10px">· 출근 확인 기준</span></label>
+      <select id="ef-wpw">
+        <option value="5">주5일 (기본)</option>
+        <option value="4">주4일</option>
+        <option value="3">주3일</option>
+        <option value="2">주2일</option>
+        <option value="1">주1일</option>
+      </select>
     </div>
     <div class="jsec" id="jsec" style="display:none">
       <label>🌱 입사일</label>
@@ -910,18 +951,68 @@ function attendCounts(key){
   return c;
 }
 
+/* ── 주별 오프 경고 계산 ── */
+// 화면에 보이는 날짜 범위에서 직원별 주별 오프 수 불균형 여부 반환
+// 주: 월~일 기준. 평일(월~금) 중 오프 수가 주당 1개가 아닌 주가 있으면 경고
+// 반환: { empId: { warn: bool, detail: [{week, offs}] } }
+function calcOffWarnings(dates, visibleEmps){
+  // 각 날짜를 주차(ISO week 아니라 월요일 기준 그룹)로 묶기
+  // key: "YYYY-Www" 형식
+  const weekGroups = {};
+  dates.forEach(({y,m,d,dow,key})=>{
+    // 월요일을 주 시작으로: dow=0(일)은 이전주에 귀속시키지 않고 독립 처리
+    // 간단히: "이 날짜가 속한 월요일" 기준으로 그룹
+    const dt = new Date(y, m, d);
+    const dayOfWeek = dt.getDay(); // 0=일, 1=월...6=토
+    // 이 날로부터 가장 가까운 월요일(이전 방향)
+    const diffToMon = (dayOfWeek === 0) ? 6 : dayOfWeek - 1;
+    const mon = new Date(dt); mon.setDate(dt.getDate() - diffToMon);
+    const wk = `${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
+    if(!weekGroups[wk]) weekGroups[wk] = [];
+    weekGroups[wk].push({key, dow});
+  });
+
+  const result = {};
+  visibleEmps.forEach(e => {
+    if(isParental(e)){ result[e.id]={warn:false}; return; }
+    const retireKey = getRetireKey(e) || e.retireDate || null;
+    const warnings = [];
+    Object.entries(weekGroups).forEach(([wk, days]) => {
+      // 이 주에서 평일만 (월~금, dow 1~5)
+      const weekdays = days.filter(({dow}) => dow >= 1 && dow <= 5);
+      if(weekdays.length < 3) return; // 주 평일이 3일 미만이면 체크 안 함 (뷰 끝 단편 주)
+      // 직원이 이 주에 활성인지
+      const activeInWeek = weekdays.some(({key}) => {
+        if(!isActive(e, key)) return false;
+        if(retireKey && key > retireKey) return false;
+        return true;
+      });
+      if(!activeInWeek) return;
+      // 오프 수 세기 (off 상태)
+      const offCount = weekdays.filter(({key}) => {
+        if(!isActive(e, key)) return false;
+        if(retireKey && key > retireKey) return false;
+        return sched[e.id] && sched[e.id][key] === 'off';
+      }).length;
+      if(offCount !== 1) warnings.push({wk, offs: offCount});
+    });
+    result[e.id] = { warn: warnings.length > 0, detail: warnings };
+  });
+  return result;
+}
+
 /* ── RENDER ── */
 function render(){
   const dates=buildDates();
   const today=new Date();
   const todKey=dk(today.getFullYear(),today.getMonth(),today.getDate());
   const isAdmin=role==='admin';
-  const COL=isAdmin?7:6;
+  const COL=isAdmin?8:7;
 
   /* thead */
   const fh=isAdmin
-    ?`<th class="fx c0" rowspan="3">No.</th><th class="fx c1" rowspan="3">이름</th><th class="fx c2" rowspan="3">입사일</th><th class="fx c3" rowspan="3">부서</th><th class="fx c4" rowspan="3">직급</th><th class="fx c5" rowspan="3">비고</th><th class="fx c6" rowspan="3">관리</th>`
-    :`<th class="fx c0" rowspan="3">No.</th><th class="fx c1" rowspan="3">이름</th><th class="fx c2" rowspan="3">입사일</th><th class="fx c3" rowspan="3">부서</th><th class="fx c4" rowspan="3">직급</th><th class="fx c5" rowspan="3">비고</th>`;
+    ?`<th class="fx c0" rowspan="3">No.</th><th class="fx c1" rowspan="3">이름</th><th class="fx c2" rowspan="3">입사일</th><th class="fx c3" rowspan="3">부서</th><th class="fx c4" rowspan="3">직급</th><th class="fx c5" rowspan="3">근무일</th><th class="fx c6" rowspan="3">비고</th><th class="fx c7" rowspan="3">관리</th>`
+    :`<th class="fx c0" rowspan="3">No.</th><th class="fx c1" rowspan="3">이름</th><th class="fx c2" rowspan="3">입사일</th><th class="fx c3" rowspan="3">부서</th><th class="fx c4" rowspan="3">직급</th><th class="fx c5" rowspan="3">근무일</th><th class="fx c6" rowspan="3">비고</th>`;
 
   const mColors=['#eef2ff','#f0fdf4','#fff7ed'];
   let mRow=fh;
@@ -945,7 +1036,9 @@ function render(){
     const sp=first?'msep':'';
     const ss=dow===0?'sun':dow===6?'sat':'';
     const tod=key===todKey?'style="box-shadow:inset 0 0 0 2px var(--acc)"':'';
-    dRow+=`<th class="dc ${sp} ${ss}" data-key="${key}" ${tod}>${d}</th>`;
+    const adminCls=isAdmin?' admin-clickable':'';
+    const adminClick=isAdmin?` onclick="openBulk('${key}')"` : '';
+    dRow+=`<th class="dc ${sp} ${ss}${adminCls}" data-key="${key}" ${tod}${adminClick}>${d}</th>`;
     wRow+=`<th class="${sp} ${ss}" style="font-size:10px;color:var(--txm);padding:3px 2px">${DW[dow]}</th>`;
   });
 
@@ -958,6 +1051,8 @@ function render(){
   // 현재 뷰의 첫 번째 날짜 기준으로 퇴사자 필터
   const viewStartDate=dates[0];
   const visibleEmps=emps.filter(e=>!isRetiredBeforeMonth(e,viewStartDate.y,viewStartDate.m+1)); // m+1: 0-indexed→1-indexed
+  // 오프 경고 계산
+  const offWarnings = calcOffWarnings(dates, visibleEmps);
   document.getElementById('tb').innerHTML=visibleEmps.map((e,i)=>{
     let isNew=false;
     // dates 목록에서 실제 표시되는 월 목록으로 신규 여부 확인
@@ -966,15 +1061,59 @@ function render(){
       const [vy,vm]=ym.split('-').map(Number);
       if(isNewMonth(e,vy,vm))isNew=true;
     });
-    const nameTd=isNew?`${e.name} <span class="chip cn" style="font-size:9px">신규</span>`:e.name;
+    const warnInfo = offWarnings[e.id];
+    const warnBadge = (warnInfo && warnInfo.warn)
+      ? `<span class="off-warn" title="주별 오프 수가 1개가 아닌 주가 있습니다">⚠ 오프</span>`
+      : '';
+    const nameTd=isNew
+      ? `${e.name} <span class="chip cn" style="font-size:9px">신규</span>${warnBadge}`
+      : `${e.name}${warnBadge}`;
+
+    // ── 주간 불일치 계산 (wpw 기준) ──
+    const ABSENT_ST=new Set(['off','annual','ham','hpm','compen','cam','cpm','sub','resign','unpaid']);
+    const wpw=e.wpw||5;
+    // 날짜→week key 매핑 (월요일 시작)
+    const dateWeekMap={};
+    dates.forEach(({y,m,d,key})=>{
+      const dt=new Date(y,m,d);
+      const diff=(dt.getDay()===0)?6:dt.getDay()-1;
+      const mon=new Date(dt); mon.setDate(dt.getDate()-diff);
+      const wk=`${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
+      dateWeekMap[key]=wk;
+    });
+    // week별 해당 직원 재직 중인 평일 날짜 목록
+    const empWeekMap={};
+    dates.forEach(({dow,key})=>{
+      if(dow<1||dow>5) return;
+      if(beforeJoin(e,key)) return;
+      const rk2=getRetireKey(e)||e.retireDate;
+      if(rk2&&key>rk2) return;
+      const wk=dateWeekMap[key];
+      if(!empWeekMap[wk]) empWeekMap[wk]=[];
+      empWeekMap[wk].push(key);
+    });
+    // 주간별 실제 출근일 vs wpw 비교
+    const mismatchWeeks=new Set();
+    if(!isParental(e)){
+      Object.entries(empWeekMap).forEach(([wk,days])=>{
+        if(days.length<3) return; // 화면 가장자리 부분 주 제외
+        const actualWork=days.filter(k=>{
+          const st=sched[e.id]&&sched[e.id][k];
+          return !st||!ABSENT_ST.has(st);
+        }).length;
+        if(actualWork!==wpw) mismatchWeeks.add(wk);
+      });
+    }
 
     const cells=dates.map(({y,m,d,dow,key,first})=>{
       const sp=first?'msep':'';
-      const wk=(dow===0||dow===6);
+      const wkend=(dow===0||dow===6);
       const tod=key===todKey;
+      const isMismatch=(!wkend)&&mismatchWeeks.has(dateWeekMap[key]);
+      const mStyle=isMismatch?' style="background:rgba(251,146,60,.2);outline:1px solid rgba(251,146,60,.45)"':'';
       if(beforeJoin(e,key)){
         const bdrL=first?';border-left:2.5px solid var(--acc)':'';
-        return `<td class="dc ro ${wk?'wk':''} ${sp}" style="background:#f5f5f7;color:#c0c4d4;font-size:10px;font-weight:500;text-align:center${bdrL}">✕</td>`;
+        return `<td class="dc ro ${wkend?'wk':''} ${sp}" style="background:#f5f5f7;color:#c0c4d4;font-size:10px;font-weight:500;text-align:center${bdrL}">✕</td>`;
       }
       // 퇴사 다음날 ~ 퇴사월 말일: ✕ 표시
       const retireKey=getRetireKey(e)||e.retireDate;
@@ -984,27 +1123,29 @@ function render(){
         const inRetireMonth=(cY===rY&&cM===rM);
         if(inRetireMonth){
           const bdrL=first?';border-left:2.5px solid var(--acc)':'';
-          // 관리자: 클릭하면 퇴사 취소 모달 (첫 번째 ✕ 셀에서만)
           if(isAdmin){
-            return `<td class="dc ${wk?'wk':''} ${sp}" style="background:#f5f5f7;color:#b91c1c;font-size:11px;font-weight:700;text-align:center;cursor:pointer${bdrL}" onclick="openCancelResign('${e.id}')" title="클릭하여 퇴사 취소">✕</td>`;
+            return `<td class="dc ${wkend?'wk':''} ${sp}" style="background:#f5f5f7;color:#b91c1c;font-size:11px;font-weight:700;text-align:center;cursor:pointer${bdrL}" onclick="openCancelResign('${e.id}')" title="클릭하여 퇴사 취소">✕</td>`;
           }
-          return `<td class="dc ro ${wk?'wk':''} ${sp}" style="background:#f5f5f7;color:#c0c4d4;font-size:10px;font-weight:500;text-align:center${bdrL}">✕</td>`;
+          return `<td class="dc ro ${wkend?'wk':''} ${sp}" style="background:#f5f5f7;color:#c0c4d4;font-size:10px;font-weight:500;text-align:center${bdrL}">✕</td>`;
         }
-        return `<td class="dc ro ${wk?'wk':''} ${sp}"></td>`;
+        return `<td class="dc ro ${wkend?'wk':''} ${sp}"></td>`;
       }
-      // 육아휴직 비고인 경우: 강제 sub 상태, 수정 불가
+      // 육아휴직: 강제 sub 상태
       if(isParental(e)){
-        const cls=`dc${wk?' wk':''}${tod?' tod':''}${first?' msep':''} ro`;
+        const cls=`dc${wkend?' wk':''}${tod?' tod':''}${first?' msep':''} ro`;
         return `<td class="${cls}"><span class="chip cs">육아</span></td>`;
       }
       const st=sched[e.id]&&sched[e.id][key];
       const chip=st&&SM[st]?`<span class="chip ${SM[st].c}">${SM[st].s}</span>`:'';
-      const cls=`dc${wk?' wk':''}${tod?' tod':''}${first?' msep':''}${isAdmin?'':' ro'}`;
+      const cls=`dc${wkend?' wk':''}${tod?' tod':''}${first?' msep':''}${isAdmin?'':' ro'}`;
       const click=isAdmin?` onclick="openStatus('${e.id}','${key}')"`:' ';
-      return `<td class="${cls}"${click}>${chip}</td>`;
+      return `<td class="${cls}"${mStyle}${click}>${chip}</td>`;
     }).join('');
 
-    const ac=isAdmin?`<td class="c6"><div class="act-wrap"><button class="ibtn ibtn-e" onclick="openEditEmp('${e.id}')" title="수정">✎</button><button class="ibtn ibtn-d" onclick="openDelModal('${e.id}')" title="삭제">✕</button></div></td>`:'';
+    const ac=isAdmin?`<td class="c7"><div class="act-wrap"><button class="ibtn ibtn-e" onclick="openEditEmp('${e.id}')" title="수정">✎</button><button class="ibtn ibtn-d" onclick="openDelModal('${e.id}')" title="삭제">✕</button></div></td>`:'';
+
+    // 주당 근무일: 직원 데이터에 저장된 wpw 사용
+    const workDayLabel=isParental(e)?'–':`주${wpw}일`;
 
     return `<tr${isNew?' class="new-row"':''}>
       <td class="c0" style="color:var(--txm);font-size:11px">${i+1}</td>
@@ -1012,14 +1153,15 @@ function render(){
       <td class="c2">${e.joinDate||''}</td>
       <td class="c3">${e.dept}</td>
       <td class="c4">${e.rank}</td>
-      <td class="c5" style="overflow:hidden;text-overflow:ellipsis${isParental(e)?';color:var(--subt);font-weight:600':''}">${e.note||''}</td>
+      <td class="c5">${workDayLabel}</td>
+      <td class="c6" style="overflow:hidden;text-overflow:ellipsis${isParental(e)?';color:var(--subt);font-weight:600':''}">${e.note||''}</td>
       ${ac}${cells}</tr>`;
   }).join('');
 
   /* tfoot: 총근무 */
   const ftFix=isAdmin
-    ?`<td class="c0"></td><td class="c1" style="color:var(--txd)">총근무</td><td class="c2"></td><td class="c3"></td><td class="c4"></td><td class="c5"></td><td class="c6"></td>`
-    :`<td class="c0"></td><td class="c1" style="color:var(--txd)">총근무</td><td class="c2"></td><td class="c3"></td><td class="c4"></td><td class="c5"></td>`;
+    ?`<td class="c0"></td><td class="c1" style="color:var(--txd)">총근무</td><td class="c2"></td><td class="c3"></td><td class="c4"></td><td class="c5"></td><td class="c6"></td><td class="c7"></td>`
+    :`<td class="c0"></td><td class="c1" style="color:var(--txd)">총근무</td><td class="c2"></td><td class="c3"></td><td class="c4"></td><td class="c5"></td><td class="c6"></td>`;
 
   const wCells=dates.map(({key,first})=>{
     const sp=first?';border-left:2.5px solid var(--acc)':'';
@@ -1140,6 +1282,58 @@ function setSt(k){
 }
 function closeStatus(){document.getElementById('ov').classList.remove('op');mE=mD=null;document.body.focus();}
 
+/* ── 일괄 적용 모달 ── */
+let bulkDate=null, bulkSt=null;
+
+function openBulk(dateKey){
+  if(role!=='admin')return;
+  bulkDate=dateKey; bulkSt=null;
+  const [y,m,d]=dateKey.split('-').map(Number);
+  const dow=new Date(y,m-1,d).getDay();
+  document.getElementById('bulk-date-label').textContent=`${m}월 ${d}일 (${DW[dow]}) 일괄 적용`;
+  // 일괄 가능한 상태: 퇴사·육아 제외
+  const allowedKeys=Object.keys(SM).filter(k=>k!=='resign'&&k!=='sub');
+  document.getElementById('bulk-sg').innerHTML=allowedKeys.map(k=>{
+    const v=SM[k];
+    return `<button class="sb" style="${v.bg}" onclick="selectBulkSt('${k}',this)">${v.l}</button>`;
+  }).join('');
+  // 이 날짜에 적용될 대상 인원 수 계산
+  const dates=buildDates();
+  const viewStartDate=dates[0];
+  const visible=emps.filter(e=>!isRetiredBeforeMonth(e,viewStartDate.y,viewStartDate.m+1));
+  const targets=visible.filter(e=>isActive(e,dateKey)&&!isParental(e)&&!((getRetireKey(e)||e.retireDate)&&dateKey>(getRetireKey(e)||e.retireDate)));
+  document.getElementById('bulk-sub').innerHTML=
+    `전체 <b>${targets.length}명</b>에게 일괄 적용됩니다<br><span style="font-size:11px;color:#dc2626">※ 이미 입력된 상태도 덮어씁니다</span>`;
+  document.getElementById('bulk-apply-btn').disabled=true;
+  document.getElementById('bulk-ov').classList.add('op');
+}
+
+function selectBulkSt(k, btn){
+  bulkSt=k;
+  document.querySelectorAll('#bulk-sg .sb').forEach(b=>b.classList.remove('act'));
+  btn.classList.add('act');
+  document.getElementById('bulk-apply-btn').disabled=false;
+}
+
+function closeBulk(){
+  document.getElementById('bulk-ov').classList.remove('op');
+  bulkDate=null; bulkSt=null;
+  document.body.focus();
+}
+
+function applyBulk(){
+  if(!bulkDate||!bulkSt)return;
+  const dates=buildDates();
+  const viewStartDate=dates[0];
+  const visible=emps.filter(e=>!isRetiredBeforeMonth(e,viewStartDate.y,viewStartDate.m+1));
+  const targets=visible.filter(e=>isActive(e,bulkDate)&&!isParental(e)&&!((getRetireKey(e)||e.retireDate)&&bulkDate>(getRetireKey(e)||e.retireDate)));
+  targets.forEach(e=>{
+    if(!sched[e.id])sched[e.id]={};
+    sched[e.id][bulkDate]=bulkSt;
+  });
+  saveData(); closeBulk(); render();
+}
+
 /* ── EMP MODAL ── */
 let editId=null,curTab='n';
 function switchTab(t){
@@ -1164,6 +1358,7 @@ function openAddEmp(){
   document.getElementById('ef-dept').value='';
   document.getElementById('ef-rank').value='';
   document.getElementById('ef-id').disabled=false;
+  document.getElementById('ef-wpw').value='5';
   document.getElementById('em-err').textContent='';
   document.getElementById('jsec').style.display='none';
   document.getElementById('tab-n').className='tab-btn on';
@@ -1183,6 +1378,7 @@ function openEditEmp(eid){
   document.getElementById('ef-dept').value=e.dept;
   document.getElementById('ef-rank').value=e.rank;
   document.getElementById('ef-note').value=e.note||'';
+  document.getElementById('ef-wpw').value=String(e.wpw||5);
   document.getElementById('ef-id').disabled=true;
   document.getElementById('em-err').textContent='';
   document.getElementById('jsec').style.display='block';
@@ -1202,6 +1398,7 @@ function saveEmp(){
   const dept=document.getElementById('ef-dept').value;
   const rank=document.getElementById('ef-rank').value;
   const note=document.getElementById('ef-note').value.trim();
+  const wpw=parseInt(document.getElementById('ef-wpw').value)||5;
   const err=document.getElementById('em-err');
   if(!name){err.textContent='이름을 입력해주세요.';return;}
   if(!dept){err.textContent='부서를 선택해주세요.';return;}
@@ -1214,11 +1411,11 @@ function saveEmp(){
   }
   if(editId){
     const idx=emps.findIndex(x=>x.id===editId);
-    if(idx>-1)emps[idx]={...emps[idx],name,dept,rank,note,joinDate};
+    if(idx>-1)emps[idx]={...emps[idx],name,dept,rank,note,wpw,joinDate};
   }else{
     const nid=eid||('E'+Date.now());
     if(emps.find(x=>x.id===nid)){err.textContent='이미 존재하는 사원번호입니다.';return;}
-    emps.push({id:nid,name,dept,rank,note,joinDate,retireDate:''});
+    emps.push({id:nid,name,dept,rank,note,wpw,joinDate,retireDate:''});
   }
   sortEmps();saveData();closeEmpModal();render();
 }
