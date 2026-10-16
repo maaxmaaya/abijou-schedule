@@ -366,7 +366,7 @@ function updateStickyTops(){
   <div class="lb">
     <h1>Abijou구로점 근무일정표</h1>
     <p class="sub">Abijou Guro · Schedule Manager</p>
-    <p style="font-size:11px;color:var(--txm);margin-top:6px;font-family:'DM Mono',monospace">v2.6 · 2026-10-16</p>
+    <p style="font-size:11px;color:var(--txm);margin-top:6px;font-family:'DM Mono',monospace">v2.7 · 2026-10-16</p>
     <label>비밀번호</label>
     <input type="password" id="pw" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')login()">
     <button class="lbtn" onclick="login()">로그인</button>
@@ -1036,8 +1036,9 @@ function render(){
     const sp=first?'msep':'';
     const ss=dow===0?'sun':dow===6?'sat':'';
     const tod=key===todKey?'style="box-shadow:inset 0 0 0 2px var(--acc)"':'';
-    const adminCls=isAdmin?' admin-clickable':'';
-    const adminClick=isAdmin?` onclick="openBulk('${key}')"` : '';
+    // 일요일은 헤더 클릭(일괄 적용) 비활성화
+    const adminCls=(isAdmin&&dow!==0)?' admin-clickable':'';
+    const adminClick=(isAdmin&&dow!==0)?` onclick="openBulk('${key}')"` : '';
     dRow+=`<th class="dc ${sp} ${ss}${adminCls}" data-key="${key}" ${tod}${adminClick}>${d}</th>`;
     wRow+=`<th class="${sp} ${ss}" style="font-size:10px;color:var(--txm);padding:3px 2px">${DW[dow]}</th>`;
   });
@@ -1069,8 +1070,8 @@ function render(){
       ? `${e.name} <span class="chip cn" style="font-size:9px">신규</span>${warnBadge}`
       : `${e.name}${warnBadge}`;
 
-    // ── 주간 불일치 계산 (wpw 기준) ──
-    const ABSENT_ST=new Set(['off','annual','ham','hpm','compen','cam','cpm','sub','resign','unpaid']);
+    // ── 주간 불일치 계산 (wpw 기준, 월~토 6일 단위) ──
+    // 출근으로 인정하지 않는 상태: "오프"만 제외 (나머지 모두 출근 카운트)
     const wpw=e.wpw||5;
     // 날짜→week key 매핑 (월요일 시작)
     const dateWeekMap={};
@@ -1081,10 +1082,10 @@ function render(){
       const wk=`${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
       dateWeekMap[key]=wk;
     });
-    // week별 해당 직원 재직 중인 평일 날짜 목록
+    // week별 해당 직원 재직 중인 월~토 날짜 목록
     const empWeekMap={};
     dates.forEach(({dow,key})=>{
-      if(dow<1||dow>5) return;
+      if(dow===0) return; // 일요일 제외
       if(beforeJoin(e,key)) return;
       const rk2=getRetireKey(e)||e.retireDate;
       if(rk2&&key>rk2) return;
@@ -1092,14 +1093,14 @@ function render(){
       if(!empWeekMap[wk]) empWeekMap[wk]=[];
       empWeekMap[wk].push(key);
     });
-    // 주간별 실제 출근일 vs wpw 비교
+    // 주간별 실제 출근일 vs wpw 비교 (오프만 결근 처리)
     const mismatchWeeks=new Set();
     if(!isParental(e)){
       Object.entries(empWeekMap).forEach(([wk,days])=>{
-        if(days.length<3) return; // 화면 가장자리 부분 주 제외
+        if(days.length<4) return; // 화면 가장자리 부분 주 제외 (월~토 4일 미만)
         const actualWork=days.filter(k=>{
           const st=sched[e.id]&&sched[e.id][k];
-          return !st||!ABSENT_ST.has(st);
+          return st!=='off'; // 오프만 결근, 나머지는 출근
         }).length;
         if(actualWork!==wpw) mismatchWeeks.add(wk);
       });
@@ -1108,8 +1109,10 @@ function render(){
     const cells=dates.map(({y,m,d,dow,key,first})=>{
       const sp=first?'msep':'';
       const wkend=(dow===0||dow===6);
+      const isSun=(dow===0);
       const tod=key===todKey;
-      const isMismatch=(!wkend)&&mismatchWeeks.has(dateWeekMap[key]);
+      // 불일치 강조: 월~토 (일요일 제외)
+      const isMismatch=(!isSun)&&mismatchWeeks.has(dateWeekMap[key]);
       const mStyle=isMismatch?' style="background:rgba(251,146,60,.2);outline:1px solid rgba(251,146,60,.45)"':'';
       if(beforeJoin(e,key)){
         const bdrL=first?';border-left:2.5px solid var(--acc)':'';
@@ -1129,6 +1132,11 @@ function render(){
           return `<td class="dc ro ${wkend?'wk':''} ${sp}" style="background:#f5f5f7;color:#c0c4d4;font-size:10px;font-weight:500;text-align:center${bdrL}">✕</td>`;
         }
         return `<td class="dc ro ${wkend?'wk':''} ${sp}"></td>`;
+      }
+      // 일요일: 무조건 휴일 (클릭·편집 불가)
+      if(isSun){
+        const cls=`dc wk${first?' msep':''} ro`;
+        return `<td class="${cls}" style="color:#c0c4d4;font-size:10px;text-align:center">휴</td>`;
       }
       // 육아휴직: 강제 sub 상태
       if(isParental(e)){
@@ -1291,12 +1299,10 @@ function openBulk(dateKey){
   const [y,m,d]=dateKey.split('-').map(Number);
   const dow=new Date(y,m-1,d).getDay();
   document.getElementById('bulk-date-label').textContent=`${m}월 ${d}일 (${DW[dow]}) 일괄 적용`;
-  // 일괄 가능한 상태: 퇴사·육아 제외
-  const allowedKeys=Object.keys(SM).filter(k=>k!=='resign'&&k!=='sub');
-  document.getElementById('bulk-sg').innerHTML=allowedKeys.map(k=>{
-    const v=SM[k];
-    return `<button class="sb" style="${v.bg}" onclick="selectBulkSt('${k}',this)">${v.l}</button>`;
-  }).join('');
+  // 선택 가능 항목: 휴일, 오프, 상태 지우기 세 가지만
+  document.getElementById('bulk-sg').innerHTML=
+    `<button class="sb" style="background:var(--off);color:var(--offt)" onclick="selectBulkSt('off',this)">오프(V)</button>`+
+    `<button class="sb" style="background:#f1f5f9;color:#475569;border:1.5px solid #cbd5e1" onclick="selectBulkSt('__clear__',this)">상태 지우기</button>`;
   // 이 날짜에 적용될 대상 인원 수 계산
   const dates=buildDates();
   const viewStartDate=dates[0];
@@ -1329,7 +1335,11 @@ function applyBulk(){
   const targets=visible.filter(e=>isActive(e,bulkDate)&&!isParental(e)&&!((getRetireKey(e)||e.retireDate)&&bulkDate>(getRetireKey(e)||e.retireDate)));
   targets.forEach(e=>{
     if(!sched[e.id])sched[e.id]={};
-    sched[e.id][bulkDate]=bulkSt;
+    if(bulkSt==='__clear__'){
+      delete sched[e.id][bulkDate];
+    } else {
+      sched[e.id][bulkDate]=bulkSt;
+    }
   });
   saveData(); closeBulk(); render();
 }
