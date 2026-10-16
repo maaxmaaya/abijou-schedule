@@ -346,7 +346,7 @@ function updateStickyTops(){
   <div class="lb">
     <h1>Abijou구로점 근무일정표</h1>
     <p class="sub">Abijou Guro · Schedule Manager</p>
-    <p style="font-size:11px;color:var(--txm);margin-top:6px;font-family:'DM Mono',monospace">v2.2 · 2026-10-13</p>
+    <p style="font-size:11px;color:var(--txm);margin-top:6px;font-family:'DM Mono',monospace">v2.3 · 2026-10-16</p>
     <label>비밀번호</label>
     <input type="password" id="pw" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')login()">
     <button class="lbtn" onclick="login()">로그인</button>
@@ -603,6 +603,75 @@ const FIREBASE_CONFIG = {
 
 // Firebase 초기화
 let db = null;
+
+/* ── 관리자 동시접속 방지 ── */
+const DOC_SESSION = 'adminSession';
+let mySessionId = null;          // 이 탭의 고유 세션 ID
+let sessionUnsubscribe = null;   // Firestore onSnapshot 해제 함수
+
+// 세션 ID 생성 (충분히 고유한 값)
+function makeSessionId(){
+  return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,8);
+}
+
+// 관리자 로그인 시: 세션 잠금 시도. 성공→true, 이미 다른 세션→false
+async function tryAcquireAdminSession(){
+  if(!db) return true; // Firebase 없으면 제한 안 함
+  try{
+    const ref = db.collection('abijou').doc(DOC_SESSION);
+    const snap = await ref.get();
+    if(snap.exists){
+      const data = snap.data();
+      // 활성 세션이 있고 내 세션이 아니면 거부
+      if(data.active && data.sessionId && data.sessionId !== mySessionId){
+        // 오래된 세션인지 확인 (5분 이상 지나면 만료 처리)
+        const age = Date.now() - (data.loginTime || 0);
+        if(age < 5 * 60 * 1000){
+          return false; // 다른 관리자가 접속 중
+        }
+      }
+    }
+    // 세션 등록
+    mySessionId = makeSessionId();
+    await ref.set({ active: true, sessionId: mySessionId, loginTime: Date.now() });
+    // 다른 기기에서 내 세션을 덮어쓰면 강제 로그아웃
+    sessionUnsubscribe = ref.onSnapshot(snap2 => {
+      if(!snap2.exists) return;
+      const d = snap2.data();
+      if(d.sessionId && d.sessionId !== mySessionId && role === 'admin'){
+        alert('다른 기기에서 관리자로 접속하여 현재 세션이 종료됩니다.');
+        releaseAdminSession(false);
+        role = null;
+        document.getElementById('ls').style.display='flex';
+        document.getElementById('pw').value='';
+        document.getElementById('lerr').textContent='';
+        document.getElementById('bottom-nav').style.display='none';
+      }
+    });
+    return true;
+  }catch(e){
+    console.warn('세션 체크 실패:', e);
+    return true; // 오류 시 허용
+  }
+}
+
+// 관리자 로그아웃 시 세션 잠금 해제
+async function releaseAdminSession(clearFirestore=true){
+  if(sessionUnsubscribe){ sessionUnsubscribe(); sessionUnsubscribe=null; }
+  if(!db || !mySessionId) return;
+  try{
+    const ref = db.collection('abijou').doc(DOC_SESSION);
+    if(clearFirestore){
+      // 내 세션이 현재 등록된 세션과 같을 때만 해제
+      const snap = await ref.get();
+      if(snap.exists && snap.data().sessionId === mySessionId){
+        await ref.set({ active: false, sessionId: null, loginTime: null });
+      }
+    }
+  }catch(e){ console.warn('세션 해제 실패:', e); }
+  mySessionId = null;
+}
+
 function initFirebase(){
   try{
     if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
@@ -721,15 +790,26 @@ async function login(){
   const v=document.getElementById('pw').value;
   if(!v){ document.getElementById('lerr').textContent='비밀번호를 입력하세요.'; return; }
   const hash=await sha256(v);
-  if(hash===PW_HASH.admin){role='admin';go();}
+  if(hash===PW_HASH.admin){
+    // 관리자 동시접속 방지
+    document.getElementById('lerr').textContent='';
+    const ok = await tryAcquireAdminSession();
+    if(!ok){
+      document.getElementById('lerr').textContent='⚠️ 다른 기기에서 관리자가 접속 중입니다. 잠시 후 다시 시도하세요.';
+      return;
+    }
+    role='admin'; go();
+  }
   else if(hash===PW_HASH.viewer){role='viewer';go();}
   else document.getElementById('lerr').textContent='비밀번호가 올바르지 않습니다.';
 }
 function logout(){
+  if(role==='admin') releaseAdminSession(true);
   role=null;
   document.getElementById('ls').style.display='flex';
   document.getElementById('pw').value='';
   document.getElementById('lerr').textContent='';
+  document.getElementById('bottom-nav').style.display='none';
 }
 function go(){
   document.getElementById('ls').style.display='none';
@@ -1258,6 +1338,28 @@ async function savePw(){
   initFirebase();
   await loadData();
   sortEmps();
+  // 탭/창 닫힐 때 관리자 세션 해제 (sendBeacon 사용으로 비동기 안전)
+  window.addEventListener('beforeunload', ()=>{
+    if(role==='admin' && db && mySessionId){
+      // onSnapshot 구독 해제
+      if(sessionUnsubscribe){ sessionUnsubscribe(); sessionUnsubscribe=null; }
+      // Firestore REST API로 동기 해제 (fetch keepalive)
+      const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_CONFIG.projectId}/databases/(default)/documents/abijou/${DOC_SESSION}`;
+      const body = JSON.stringify({
+        fields:{
+          active:{booleanValue:false},
+          sessionId:{nullValue:null},
+          loginTime:{nullValue:null}
+        }
+      });
+      // keepalive: 탭 닫혀도 요청 전송 시도
+      fetch(url+'?key='+FIREBASE_CONFIG.apiKey, {
+        method:'PATCH', keepalive:true,
+        headers:{'Content-Type':'application/json'},
+        body
+      }).catch(()=>{});
+    }
+  });
 })();
 </script>
 </body>
